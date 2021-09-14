@@ -32,3 +32,4 @@ ggplot(acs_df, aes(HSDegree)) + geom_density(aes(HSDegree))
 ##quantify normality with numbers using the stat.desc() function. 
 ##Include a screen capture of the results produced.
 stat.desc(acs_df)
+stat.desc(acs_df)
