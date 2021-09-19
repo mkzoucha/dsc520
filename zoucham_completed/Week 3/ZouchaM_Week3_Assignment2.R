@@ -32,4 +32,15 @@ ggplot(acs_df, aes(HSDegree)) + geom_density(aes(HSDegree))
 ##quantify normality with numbers using the stat.desc() function. 
 ##Include a screen capture of the results produced.
 stat.desc(acs_df)
-stat.desc(acs_df)
+
+ggplot(acs_df, aes(HSDegree)) + geom_histogram(bins = 12, aes(y=..density..)) + 
+  stat_function(fun = dnorm, args = list(mean(acs_df$HSDegree), sd = sd(acs_df$HSDegree)),) +
+ggtitle("Distribution of High School Graduation Rates") + 
+  xlab("% of Population w/ High School Degree") + ylab("Number of Counties") 
+
+##Z-scores
+acs_df2 <- read.csv("data/acs-14-1yr-s0201.csv")
+meanHS <- mean(acs_df2$HSDegree)
+sdHS <- sd(acs_df2$HSDegree)
+acs_df2 <- transform(acs_df2, zscore=(acs_df2$HSDegree-meanHS)/sdHS)
+acs_df2
