@@ -1,0 +1,107 @@
+---
+title: "Week 7 Assignments"
+author: "Michael Zoucha"
+date: '2021-10-08'
+output:
+  pdf_document: default
+  html_document: default
+  word_document: default
+---
+```{r, setup, include=FALSE}
+knitr::opts_knit$set(root.dir = "/Users/Shared/OneDrive - Bellevue University/DSC 520 - Statistics for Data Science/mkzoucha_dsc520/dsc520")
+```
+# Assignment 05
+```{r echo = FALSE}
+# Assignment: ASSIGNMENT 5
+# Name: Zoucha, Michael
+# Date: 2021-10-11
+
+## Load the `data/r4ds/heights.csv` to
+heights_df <- read.csv("data/r4ds/heights.csv")
+
+## Using `cor()` compute correlation coefficients for
+## height vs. earn
+cat('Height vs Earn: ', cor(heights_df$height, heights_df$earn))
+### age vs. earn
+cat('Age vs Earn: ', cor(heights_df$age, heights_df$earn))
+### ed vs. earn
+cat('Ed vs Earn: ', cor(heights_df$ed, heights_df$earn))
+
+## Spurious correlation
+## The following is data on US spending on science, space, and technology in millions of today's dollars
+## and Suicides by hanging strangulation and suffocation for the years 1999 to 2009
+## Compute the correlation between these variables
+tech_spending <- c(18079, 18594, 19753, 20734, 20831, 23029, 23597, 23584, 25525, 27731, 29449)
+suicides <- c(5427, 5688, 6198, 6462, 6635, 7336, 7248, 7491, 8161, 8578, 9000)
+cat('Tech Spending vs Suicides: ', cor(tech_spending, suicides))
+```
+\newpage
+# Student Survey
+### i.
+```{r echo = FALSE}
+## Load the `data/r4ds/heights.csv` to
+student_df <- read.csv("data/student-survey.csv")
+
+cov(student_df)
+cat('Time Reading vs Time TV: ', cov(student_df$TimeReading,student_df$TimeTV))
+cat('Time Reading vs Gender: ', cov(student_df$TimeReading,student_df$Gender))
+cat('Time Reading vs Happiness: ', cov(student_df$TimeReading,student_df$Happiness))
+cat('Time TV vs Gender: ', cov(student_df$TimeTV,student_df$Gender))
+cat('Time TV vs Happiness: ', cov(student_df$TimeTV,student_df$Happiness))
+cat('Gender vs Happiness: ', cov(student_df$Gender,student_df$Happiness))
+```
+
+**According to the data, there is a negative relationship between time reading and time watching TV, time reading and gender, and time reading and happiness. There is a positive relationship between time watching TV and happiness, gender and happiness, and time watching tv and gender. This implies as time spent watching TV goes up, so does happiness.**  
+
+### ii.
+```{r echo = FALSE}
+## Load the `data/r4ds/heights.csv` to
+student_df <- read.csv("data/student-survey.csv")
+
+print("Student Data Frame")
+student_df
+```
+
+**It seems the Reading Time is in Hours, while the TV time is in minutes. The hours to minutes relationship is constant, so this has no effect on the covariance calculations. The gender variable is binary, though we can't tell if 1 means male or female. Happiness seems to be a score 1-100, but there is no additional information.**
+
+### iii.
+**I am using Pearson's correlation coefficient because the samples we will be comparing (column vs column) are the same size. I predict it will show a negative correlation between the time spent reading and the time spent watching TV.**
+
+### iv.
+```{r echo = FALSE}
+## Load the `data/r4ds/heights.csv` to
+student_df <- read.csv("data/student-survey.csv")
+
+cat('All Variables: ')
+cor(student_df)
+cat('Time TV vs Happiness: ', cor(student_df$TimeTV,student_df$Happiness))
+cat('Time TV vs Happiness (99% CI): ')
+cor.test(student_df$TimeTV,student_df$Happiness, method = 'pearson', conf.level = 0.99)
+```
+
+**The correlation matrix shows us there is a negative correlation between Time Reading and all other variables. There is a positive correlation between Time TV and all other variables. Happiness and Gender have a negative correlation with Time Reading and a positive correlation with all other variables.  These results suggest that watching TV has a direct inverse relationship to reading, and that the more you watch TV the happier you will be in life.**
+
+### v.
+```{r echo = FALSE}
+## Load the `data/r4ds/heights.csv` to
+student_df <- read.csv("data/student-survey.csv")
+
+cat('Correlation Coefficient - Time TV vs Happiness: ', cor(student_df$TimeTV,student_df$TimeReading))
+cat('Coefficient of Determination - Time TV vs Happiness: ', cor(student_df$TimeTV,student_df$TimeReading)^2)
+```
+
+### vi. 
+**Since the correlation between time watching TV and time reading is almost -0.9, it is obvious that time watching TV negatively affects the amount of time the student will spend reading.  The coefficient of determination of nearly 0.78 shows us that almost 80% of the variation in the time spent reading can be explained by the variation in the time spent watching TV. **
+
+### vii.
+```{r echo = FALSE}
+library(ppcor)
+
+## Load the `data/r4ds/heights.csv` to
+student_df <- read.csv("data/student-survey.csv")
+
+cat('Partial Correlation (TV, Reading, Gender(control))): ')
+pcor.test(student_df$TimeTV,student_df$TimeReading,student_df$Gender)
+```
+
+**Based on the results from the partial correlation, it is evident both males and females experience the negative correlation between the time spent watching TV and the time spent reading.**
