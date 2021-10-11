@@ -3,9 +3,9 @@ title: "ASSIGNMENT 4"
 author: "Michael Zoucha"
 date: '2021-10-08'
 output:
-  pdf_document: default
-  html_document: default
   word_document: default
+  html_document: default
+  pdf_document: default
 bibliography: bibliography.bib
 ---
 
@@ -88,7 +88,7 @@ library(pander)
 name <- c("Aragon", "Bilbo", "Frodo", "Sam", "Sauron")
 race <- c("Men", "Hobbit", "Hobbit", "Hobbit", "Maia")
 in_fellowship <- c("Yes", "No", "Yes", "Yes", "No")
-ring_bearer <- c("No", "Yes", "Yes","Yes", "Yes")
+ring_bearer <- c("No", "Yes", "Yes", "Yes", "Yes")
 age <- c(88, 129, 51, 36, 7052)
 characters_df <- data.frame(name, race, in_fellowship, ring_bearer, age)
 pandoc.table(characters_df, syle = 'simple')

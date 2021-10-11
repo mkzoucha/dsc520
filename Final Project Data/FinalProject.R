@@ -104,15 +104,11 @@ final_merged_df <- dplyr::mutate(final_merged_df,
 products_by_year<- dplyr::group_by(final_merged_df, year, ProductID) %>% 
   dplyr::summarize(number_sold = sum(OrderQty))
 
-ggplot(products_by_year, aes(x=year, y=number_sold)) + geom_point() + 
-  ggtitle("Distribution of Sale Price") + 
-  xlab("House Size (sq ft)") + ylab("Sale Price")
-
 ## History of number of items sold for each ProductCategory for each year - include bar graph
 product_cat_by_year <- dplyr::group_by(final_merged_df, year, ProductCategory) %>% 
   dplyr::summarize(number_sold = sum(OrderQty))
 
-ggplot2::ggplot(product_cat_by_year, aes(x=year, y=number_sold, fill =ProductCategory)) + 
+cat_by_year_plot <- ggplot2::ggplot(product_cat_by_year, aes(x=year, y=number_sold, fill =ProductCategory)) + 
                 ggplot2::geom_bar(stat="identity", position=position_dodge()) + 
                 ggplot2::ggtitle("Number Items Sold per Year by Category") + 
                 ggplot2::xlab("Year") + 
