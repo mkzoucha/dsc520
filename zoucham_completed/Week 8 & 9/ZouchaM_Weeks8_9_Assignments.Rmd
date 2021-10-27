@@ -1,0 +1,188 @@
+---
+title: "Weeks 8 and 9 Assignments"
+author: "Zoucha, Michael"
+date: "10/25/2021"
+output:
+  pdf_document: default
+  html_document: default
+  word_document: default
+---
+
+```{r echo = FALSE, include = FALSE}
+library(dplyr)
+library(stringr)
+library(rlang)
+library(tidyverse) 
+knitr::opts_knit$set(root.dir = "/Users/Shared/OneDrive - Bellevue University/DSC 520 - Statistics for Data Science/mkzoucha_dsc520/dsc520")
+```
+
+# Assignment 6
+
+```{r echo = FALSE, include = TRUE}
+# Assignment: ASSIGNMENT 6
+# Name: Zoucha, Michael
+# Date: 2021-10-23
+
+## Set the working directory to the root of your DSC 520 directory
+
+
+## Load the `data/r4ds/heights.csv` to
+heights_df <- read.csv("data/r4ds/heights.csv")
+
+## Load the ggplot2 library
+library(ggplot2)
+
+## Fit a linear model using the `age` variable as the predictor and `earn` as the outcome
+age_lm <-  lm(formula = earn ~ age, data = heights_df)
+
+## View the summary of your model using `summary()`
+summary(age_lm)
+
+## Creating predictions using `predict()`
+age_predict_df <- data.frame(earn = predict(age_lm, heights_df), age=heights_df$age)
+
+## Plot the predictions against the original data
+ggplot(data = heights_df, aes(y = earn, x = age)) +
+  geom_point(color='blue') +
+  geom_line(color='red',data = age_predict_df, aes(y=earn, x=age))
+
+mean_earn <- mean(heights_df$earn)
+## Corrected Sum of Squares Total
+sst <- sum((mean_earn - heights_df$earn)^2)
+## Corrected Sum of Squares for Model
+ssm <- sum((mean_earn - age_predict_df$earn)^2)
+## Residuals
+residuals <- heights_df$earn - age_predict_df$earn
+## Sum of Squares for Error
+sse <- sum(residuals^2)
+## R Squared R^2 = SSM\SST
+r_squared <- ssm/sst
+
+## Number of observations
+n <- 1192
+## Number of regression parameters
+p <- 2
+## Corrected Degrees of Freedom for Model (p-1)
+dfm <- p-1
+## Degrees of Freedom for Error (n-p)
+dfe <- n-p
+## Corrected Degrees of Freedom Total:   DFT = n - 1
+dft <- n-1
+
+## Mean of Squares for Model:   MSM = SSM / DFM
+msm <- ssm/dfm
+## Mean of Squares for Error:   MSE = SSE / DFE
+mse <- sse/dfe
+## Mean of Squares Total:   MST = SST / DFT
+mst <- sst/dft
+## F Statistic F = MSM/MSE
+f_score <- msm/mse
+
+## Adjusted R Squared R2 = 1 - (1 - R2)(n - 1) / (n - p)
+adjusted_r_squared <- 1 - (1 - r_squared) * (n - 1) / (n - p)
+
+## Calculate the p-value from the F distribution
+p_value <- pf(f_score, dfm, dft, lower.tail=F)
+```
+\newpage
+
+# Assignment 7
+
+```{r echo = FALSE, include = TRUE}
+# Assignment: ASSIGNMENT 7
+# Name: Zoucha, Michael
+# Date: 2021-10-23
+
+## Load the `data/r4ds/heights.csv` to
+heights_df <- read.csv("data/r4ds/heights.csv")
+
+# Fit a linear model
+earn_lm <-  lm(earn ~ height + age + sex + race + ed, data = heights_df)
+
+# View the summary of your model
+summary(earn_lm)
+
+predicted_df <- data.frame(
+  earn = predict(earn_lm, heights_df),
+  ed=heights_df$ed, race=heights_df$race, height=heights_df$height,
+  age=heights_df$age, sex=heights_df$sex
+  )
+
+## Compute deviation (i.e. residuals)
+mean_earn <- mean(heights_df$earn)
+## Corrected Sum of Squares Total
+sst <- sum((mean_earn - heights_df$earn)^2)
+## Corrected Sum of Squares for Model
+ssm <- sum((mean_earn - predicted_df$earn)^2)
+## Residuals
+residuals <- heights_df$earn - predicted_df$earn
+## Sum of Squares for Error
+sse <- sum(residuals^2)
+## R Squared - 0.2199 (matches model summary)
+r_squared <- ssm/sst
+
+## Number of observations (1192)
+n <- nrow(heights_df)
+## Number of regression parameters
+p <- 8
+## Corrected Degrees of Freedom for Model
+dfm <- p-1
+## Degrees of Freedom for Error
+dfe <- n-p
+## Corrected Degrees of Freedom Total:   DFT = n - 1
+dft <- n-1
+
+## Mean of Squares for Model:   MSM = SSM / DFM
+msm <- ssm/dfm
+## Mean of Squares for Error:   MSE = SSE / DFE
+mse <- sse/dfe
+## Mean of Squares Total:   MST = SST / DFT
+mst <- sst/dft
+## F Statistic
+f_score <- msm/mse
+
+## Adjusted R Squared R2 = 1 - (1 - R2)(n - 1) / (n - p)
+adjusted_r_squared <- 1 - (1 - r_squared)*(n-1) / (n - p)
+```
+\newpage
+
+# Housing Data Assignment
+
+```{r echo = FALSE, include = TRUE}
+## Load housing data to data frame
+library(lm.beta)
+library(MASS)
+library(report)
+housing_df <- read_excel("/Users/Shared/OneDrive - Bellevue University/DSC 520 - Statistics for Data Science/mkzoucha_dsc520/dsc520/data/week-7-housing.xlsx")
+colnames(housing_df)[2] <- "sale_price"
+
+price_lot_lm <-  lm(sale_price ~ sq_ft_lot, data = housing_df)
+summary(price_lot_lm)
+
+price_prediction_lm <- lm(sale_price ~ square_feet_total_living + bedrooms + bath_full_count + bath_half_count + bath_3qtr_count, data = housing_df)
+summary(price_prediction_lm)
+
+
+lm.beta(price_prediction_lm)
+
+confint(price_prediction_lm, level = 0.90)
+
+report(price_prediction_lm)
+```
+
+iii. For the simple linear regression, the r-squared value was 0.01435 and the adjusted r-squared value was 0.01428. For the multiple linear regression, the r-squared value was 0.2124 and the adjusted r-squared value was 0.2121. The r-squared value indicates how much variance in the dependent variables can be explained by the variance in the independent variables. For the simple regression, only 1% is explained by the variance in lot size, where as the multiple regression parameters account for a little over 21% of the variance in sale price. This shows that the additional parameters were useful in bettering the regression model.
+
+iv. Of the parameters I selected for the multiple regression, square_feet_total_living has the most effect with a standardized beta of 0.45 (with a 95% confidence interval of (0.43, 0.48)), while all other variables were at or below 0.06. Bedrooms and bath_full_count still have a statistically significant effect, however, and half and three-quarter bathrooms do not have a statistically significant effect.
+
+(Intercept)     square_feet_total_living                 bedrooms             bath_full_count          bath_half_count          bath_3qtr_count 
+0.00000000               0.45391133                     -0.05083265               0.05626917               0.01282095              -0.01648428 
+
+v. Beta confidence intervals:
+
+square_feet_total_living                bedrooms             bath_full_count          bath_half_count          bath_3qtr_count 
+     (0.43, 0.48)                    (-0.07, -0.03)           (0.03, 0.08)            (-0.0005, 0.03)          (-0.04, 0.0005)
+
+
+vi. Comparing the two models using anova(), we can see that the multiple regression model is much better with a p-value of 2.2e-16.
+
+vii. 

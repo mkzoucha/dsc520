@@ -97,3 +97,129 @@ pandoc.table(characters_df, syle = 'simple')
 
 Field, A., J. Miles, and Z. Field. 2012. Discovering Statistics Using R. SAGE Publications. https: //books.google.com/books?id=wd2K2zC3swIC.  
 Lander, J. P. 2014. R for Everyone: Advanced Analytics and Graphics. Addison-Wesley Data and Analytics Series. Addison-Wesley. https://books.google.com/books?id=3eBVAgAAQBAJ.
+
+```{r echo = FALSE, include = FALSE}
+
+```
+
+```{r echo = FALSE}
+salesorderdetail_df <- read.csv("SalesOrderDetail.csv")
+str(salesorderdetail_df)
+salesorderheader_df <- read.csv("SalesOrderHeader.csv")
+str(salesorderheader_df)
+salesterritory_df <- read.csv("SalesTerritory.csv")
+str(salesterritory_df)
+specialoffer_df <- read.csv("SpecialOffer.csv")
+str(specialoffer_df)
+productdetails_df <- read.csv("ProductDetails.csv")
+str(productdetails_df)
+productcategory_df <- read.csv("ProductCategory.csv")
+str(productcategory_df)
+productsubcategory_df <- read.csv("ProductSubcategory.csv")
+str(productsubcategory_df)
+```
+
+1.	ProductDetails
+    a.	ProductID (INT) – Unique product number identifier for database
+    b.	Name (CHAR) – Unique product description / name
+    c.	ProductNumber (CHAR) – Unique warehouse stock number
+    d.	MakeFlag (INT) (BINARY) – Indicates if the good needs assembled in house
+    e.	FinishedGoodsFlag (INT) (BINARY) – Indicates whether the product is finished in the warehouse
+    f.	Color (CHAR) – Color of the product, if applicable
+    g.	SafetyStockLevel (INT) – Desired amount of inventory per item
+    h.	ReorderPoint (INT) – Level at which inventory should be reordered
+    i.	StandardCost (FLOAT) – Average cost per item
+    j.	ListPrice (FLOAT) – Average price per item
+    k.	Size (CHAR) – Measurement of item, either character or integer
+    l.	SizeUnitMeasureCode (CHAR) – Unit of measurement used for size
+    m.	Weight (FLOAT) – Weight measurement of item
+    n.	WeightUnitMeasureCode (CHAR) – Unit of measurement used for weight
+    o.	DaysToManufacture (INT) – Days required to process order before shipment
+    p.	ProductLine (CHAR) – Subclass of products
+    q.	Class (CHAR) – Subclass of products
+    r.	Style (CHAR) – Subclass of products
+    s.	ProductSubcategoryID (INT) – Splits major categories into subcategories
+    t.	ProductModelID (INT) – Unique product model number
+    u.	SellStartDate (DATE) – Date of first sale
+    v.	SellEndDate (DATE) – Date of last sale
+    w.	DiscontinuedDate (DATE) – Date manufacturer discontinued production
+    x.	ROWGUID (CHAR) – Used by MS SQL for replication
+    y.	ModifiedDate (DATE) – Date line was modified
+
+2.	ProductCategory
+    a.	ProductCategoryID (INT) – Unique product category ID
+    b.	Name (CHAR) – Unique category name
+    c.	RowGUID – Used by MS SQL for replication
+    d.	ModifiedDate (DATE) – Date line was modified
+
+3.	ProductSubcategory
+    a.	ProductSubcategoryID – Unique product subcategory ID
+    b.	ProductCategoryID (INT) – Product category ID associated with each subcategory
+    c.	Name (CHAR) – Unique category name
+    d.	RowGUID – Used by MS SQL for replication
+    e.	ModifiedDate (DATE) – Date line was modified
+
+4.	SalesOrderDetail
+    a.	SalesOrderID (INT) – Unique identifier for each complete sale
+    b.	SalesOrderDetailID (INT) – Unique identifier for each line item sold
+    c.	CarrierTracking (CHAR) – Tracking number for order
+    d.	OrderQty (INT) – Number of each item ordered per order
+    e.	ProductID (INT) – Unique identifier for the product sold
+    f.	SpecialOffer (INT) – Discount code
+    g.	UnitPrice (FLOAT) – Total price for each item sold
+    h.	UnitPriceDiscount (FLOAT) – Discount amount, if applicable
+    i.	 LineTotal (FLOAT) – Total Price per line item (UnitPrice x OrderQty)
+    j.	RowGUID – Used by MS SQL for replication
+    k.	ModifiedDate (DATE) – Date line was modified
+
+5.	SalesOrderHeader
+    a.	SalesOrderID (INT) – Unique Sales Order ID number
+    b.	RevisionNumber (INT) – Order revision number
+    c.	OrderDate (DATE) – Date of order
+    d.	DueDate (DATE) – Date order is due
+    e.	ShipDate (DATE) – Date order was shipped
+    f.	Status (INT) – Order status code
+    g.	OnlineOrderFlag (INT) (BINARY) – Indicates if order was online or in store
+    h.	SalesOrderNumber (INT) – “SO” + SalesOrderID
+    i.	PurchaseOrderNumber (INT) – Purchase Order Number
+    j.	AccountNumber (CHAR) – Customer account number
+    k.	CustomerID (INT) – Customer ID number
+    l.	SalesPersonID (INT) – ID of salesperson
+    m.	TerritoryID (INT) – Territory ID code
+    n.	BillToAddressID (INT) – Key to store billing address
+    o.	ShipToAddressID (INT) – Key to store shipping address
+    p.	ShipMethondID (INT) – Key to store shipping method
+    q.	CreditCardID (INT) – Key to store credit card info
+    r.	CreditCardApprovalCode (INT) – Approval code for credit transaction
+    s.	CurrencyRateID (INT) – Key to store currency used in transaction
+    t.	Subtotal (FLOAT) – Order subtotal
+    u.	TaxAmt (FLOAT) – Taxes for order
+    v.	Freight (FLOAT) – Shipping cost
+    w.	TotalDue (FLOAT) – Total for order (subtotal + tax + shipping)
+    x.	Comment (CHAR) – Special order comments, if applicable
+    y.	RowGUID – Used by MS SQL for replication
+    z.	ModifiedDate (DATE) – Date line was modified
+
+6.	SpecialOffer
+    a.	SpecialOfferID (INT) – Unique offer identifier
+    b.	Description (CHAR) – Discount description
+    c.	DiscountPct (FLOAT) – Discount percentage
+    d.	Type (CHAR) – Discount type
+    e.	Category (CHAR) – Discount category
+    f.	StartDate (DATE) – Promotion start date
+    g.	EndDate (DATE) – Promotion end date
+    h.	MinQty (INT) – Minimum quantity required for discount
+    i.	MaxQty (INT) – Maximum quantity allowed to be discounted
+    j.	RowGUID – Used by MS SQL for replication
+    k.	ModifiedDate (DATE) – Date line was modified
+
+7.	SalesTerritory
+    a.	TerritoryID (INT) – Unique territory identifier
+    b.	Name (CHAR) – Territory name
+    c.	CountryRegion (CHAR) – Country code
+    d.	Group (CHAR) – Territory group
+    e.	SalesYTD (FLOAT) – Aggregate of sales YTD
+    f.	SalesLastYear (FLOAT) – Aggregate of sales last year
+    g.	CostYTD (FLOAT) – Aggregate of cost YTD
+    h.	RowGUID – Used by MS SQL for replication
+    i.	ModifiedDate (DATE) – Date line was modified
