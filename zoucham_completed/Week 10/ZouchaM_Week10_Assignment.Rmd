@@ -1,0 +1,75 @@
+---
+title: "Week 10 Assignments"
+author: "Zoucha, Michael"
+date: "11/2/2021"
+output:
+  pdf_document: default
+  html_document: default
+  word_document: default
+---
+
+```{r setup, include=FALSE}
+library(tidyverse)
+library(report)
+library(caTools)
+```
+
+# Assignment 1
+
+```{r echo = FALSE, include = FALSE}
+thoracic_df <- read.csv("thoracic_surgery_data.csv")
+
+## Substring size, diagnosis, performance to make all numbers
+summary(thoracic_df)
+
+survival_regression <- glm(Risk1Yr ~ Diagnosis + FVC + FEV1 + Performance + PainBefore + HaemoptysisBefore + DsponeaBefore + CoughBefore + WeaknessBefore +
+                             Size + Diabetes + MI + PAD + Smoking + Asthma + AGE, data = thoracic_df, family = 'binomial')
+summary(survival_regression)
+```
+
+- The effect of DsponeaBefore is statistically significant and positive (beta = 1.37, 95% CI [0.38, 2.31], p = 0.005; Std. beta = 1.37, 95% CI [0.38, 2.31])
+- The effect of Size is statistically significant and positive (beta = 1.65, 95% CI [0.43, 2.85], p = 0.007; Std. beta = 1.65, 95% CI [0.43, 2.85])
+- The effect of Diabetes is statistically significant and positive (beta = 0.93, 95% CI [0.02, 1.78], p = 0.037; Std. beta = 0.93, 95% CI [0.02, 1.78])
+- The effect of Smoking is statistically significant and positive (beta = 1.08, 95% CI [0.18, 2.16], p = 0.030; Std. beta = 1.08, 95% CI [0.18, 2.16])
+
+```{r echo = FALSE, include = TRUE}
+split <- sample.split(thoracic_df, SplitRatio = 0.8)
+train_data <- subset(thoracic_df, split == "TRUE")
+test_data <- subset(thoracic_df, split == "FALSE")
+
+thoracic_df$Diagnosis <- as.factor(substring(thoracic_df$Diagnosis, 4, 4))
+thoracic_df$Performance <- as.factor(substring(thoracic_df$Performance, 4, 4))
+
+survival_regression_train <- glm(Risk1Yr ~ Diagnosis + DsponeaBefore + Size + Diabetes + Smoking + AGE + Performance, data = train_data, family = binomial(link = "logit"))
+summary(survival_regression_train)
+
+res <- predict(survival_regression_train, test_data, type="response")
+
+res <- predict(survival_regression_train, train_data, type="response")
+
+confmatrix <- table(Actual_Value = train_data$Risk1Yr, Predicted_Value = res > 0.5)
+confmatrix
+(confmatrix[[1,1]] + confmatrix[[2,2]]) / sum(confmatrix)
+```
+\newpage
+# Assignment 2
+```{r echo = FALSE, include = TRUE}
+binary_df <- read.csv("/Users/Shared/OneDrive - Bellevue University/DSC 520 - Statistics for Data Science/mkzoucha_dsc520/dsc520/data/binary-classifier-data.csv")
+
+summary(binary_df)
+
+split <- sample.split(binary_df, SplitRatio = 0.8)
+train_data <- subset(binary_df, split == "TRUE")
+test_data <- subset(binary_df, split == "FALSE")
+
+binary_regression <- glm(label ~ x + y, data = train_data, family = 'binomial')
+summary(binary_regression)
+
+res <- predict(binary_regression, test_data, type="response")
+res <- predict(binary_regression, train_data, type="response")
+
+confmatrix <- table(Actual_Value = train_data$label, Predicted_Value = res > 0.5)
+confmatrix
+
+(confmatrix[[1,1]] + confmatrix[[2,2]]) / sum(confmatrix)
+```

@@ -1,0 +1,19 @@
+---
+title: "Week 10 Assignments"
+author: "Zoucha, Michael"
+date: "11/2/2021"
+output:
+  pdf_document: default
+  html_document: default
+  word_document: default
+---
+
+```{r setup, include=FALSE}
+library(tidyverse)
+```
+
+# Assignment 1
+
+```{r echo = FALSE, include = FALSE}
+thoracic_df <- read.csv("thoracic_surgery_data.csv")
+```

@@ -1,7 +1,7 @@
 ---
 title: "Final Project"
 author: "Michael Zoucha"
-##date: '2021-10-08'
+date: '2021-10-08'
 output:
   pdf_document: default
   html_document: default
