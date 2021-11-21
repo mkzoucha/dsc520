@@ -1,26 +1,32 @@
 ---
 title: "Final Project"
 author: "Michael Zoucha"
-date: '2021-10-08'
+date: '2021-11-20'
 output:
   pdf_document: default
   html_document: default
   word_document: default
-##bibliography: bibliography.bib
+#bibliography: bibliography.bib
 ---
 ```{r echo = FALSE, include = FALSE}
+library(report)
 library(tidyverse)
+library(lubridate)
 ```
 \newpage
 # Table of Contents
 
-``I.   Setup................................................................................3  ``
-``II.  Introduction.........................................................................4  ``
-``III. Research Questions...................................................................4  ``
-``IV.  Approach.............................................................................4  ``
-``V.   Data.................................................................................5  ``
-``VI.  Data Cleaning........................................................................7  ``
-``VII. Exploratory Data Analysis............................................................9  ``
+``I.    Setup................................................................................3  ``
+``II.   Introduction.........................................................................4  ``
+``III.  Research Questions...................................................................4  ``
+``IV.   Approach.............................................................................4  ``
+``V.    Data.................................................................................5  ``
+``VI.   Data Cleaning........................................................................7  ``
+``VII.  Exploratory Data Analysis............................................................8  ``
+``VIII. Time Series Analysis................................................................12  ``
+``IX.   Regression Modeling / Forecasting...................................................16  ``
+``X.    Limitations.........................................................................17  ``
+``XI.   Conclusions.........................................................................17  ``
 \newpage
 
 # Setup
@@ -37,6 +43,8 @@ library(tidyverse)
         -  tibble for tibble management
         -  stringr for strings
         -  forcats for factors
+2.  lubridate
+3.  report
 
 \newpage
 # Introduction
@@ -176,7 +184,7 @@ productsubcategory_df <- read.csv("ProductSubcategory.csv")
 # Data Cleaning
 
 1. Parse down data using select function
-```{r echo = TRUE, include = TRUE}
+```{r echo = FALSE, include = FALSE}
 salesorderdetail_df <- select(salesorderdetail_df, SalesOrderID, OrderQty, 
                               SpecialOfferID, UnitPrice, LineTotal, ProductID)
 salesorderheader_df <- select(salesorderheader_df, TerritoryID, SalesOrderID, 
@@ -196,7 +204,7 @@ productsubcategory_df <- select(productsubcategory_df, ProductSubcategoryID,
     a.	Merge ProductCategory to ProductSubcategory using a left join on ProductCategoryID
     b.	Merge ProductSubcategory to ProductDetails using a left join on ProductSubcategoryID
     c.	Rename ‘name’ columns to give more meaning
-```{r echo = TRUE, include = TRUE}
+```{r echo = FALSE, include = FALSE}
 product_merged_df <- merge(productdetails_df, productsubcategory_df, 
                            by = "ProductSubcategoryID", all.x = TRUE) %>%
                      merge(., productcategory_df, 
@@ -212,7 +220,7 @@ product_merged_df <- rename(product_merged_df, Subcategory = Name.y,
     c.	Merge new SalesOrderHeader_merged data frame to SalesOrderDetail using a left join on SalesOrderID
     d.	Merge product_merged to sales_details_merged using a left join on ProductID
     e.	Rename columns to give more meaning
-```{r echo = TRUE, include = TRUE}
+```{r echo = FALSE, include = FALSE}
 final_merged_df <- merge(salesorderdetail_df, product_merged_df, 
                          by = "ProductID", all.x = TRUE) %>%
                    merge(., salesorderheader_df, 
@@ -238,7 +246,7 @@ remove(salesorderdetail_df, salesorderheader_df, salesterritory_df, specialoffer
     b.	Month substring of date
     c.	TotalProfit
     d.	ItemProfit
-```{r echo = TRUE, include = TRUE}
+```{r echo = FALSE, include = TRUE}
 final_merged_df <- dplyr::mutate(final_merged_df, 
                                  year = substring(OrderDate,7,10)) %>%
                    dplyr::mutate(., month = substring(OrderDate,0,2)) %>%
@@ -264,7 +272,8 @@ products_by_year<- dplyr::group_by(final_merged_df, year, ProductID) %>%
 
 ## History of number of items sold for each ProductID for each year
 products_by_year_month <- dplyr::group_by(final_merged_df, year, month, ProductID) %>% 
-  dplyr::summarize(number_sold = sum(OrderQty))
+  dplyr::summarize(number_sold = sum(OrderQty), total_revenue = sum(LineTotal)) 
+products_by_year_month <- dplyr::mutate(products_by_year_month, date = as.Date(paste(year, "/", month, "/", 01, sep = "")))
 
 ## History of number of items sold for each ProductCategory for each year - include bar graph
 product_cat_by_year <- dplyr::group_by(final_merged_df, year, ProductCategory) %>% 
@@ -272,15 +281,22 @@ product_cat_by_year <- dplyr::group_by(final_merged_df, year, ProductCategory) %
 
 ## History of number of items sold for each ProductCategory for each year
 product_cat_by_year_month <- dplyr::group_by(final_merged_df, year, month, ProductCategory) %>% 
-  dplyr::summarize(number_sold = sum(OrderQty))
-
+  dplyr::summarize(number_sold = sum(OrderQty), total_revenue = sum(LineTotal)) 
+product_cat_by_year_month <- dplyr::mutate(product_cat_by_year_month, date = as.Date(paste(year, "/", month, "/", 01, sep = "")))
 ## History of number of items sold for each ProductSubCategory for each year - include bar graph
 product_subcat_by_year <- dplyr::group_by(final_merged_df, year, Subcategory, ProductCategory) %>% 
   dplyr::summarize(number_sold = sum(OrderQty))
 
 ## History of number of items sold for each ProductSubCategory for each year
 product_subcat_by_year_month <- dplyr::group_by(final_merged_df, year, month, Subcategory) %>% 
-  dplyr::summarize(number_sold = sum(OrderQty))
+  dplyr::summarize(number_sold = sum(OrderQty), total_revenue = sum(LineTotal)) 
+product_subcat_by_year_month <- dplyr::mutate(product_subcat_by_year_month, date = as.Date(paste(year, "/", month, "/", 01, sep = "")))
+
+
+## History of number of items sold for each ProductSubCategory for each year
+product_cat_sub_by_year_month <- dplyr::group_by(final_merged_df, year, month, ProductCategory, Subcategory) %>% 
+  dplyr::summarize(number_sold = sum(OrderQty), total_revenue = sum(LineTotal)) 
+product_cat_sub_by_year_month <- dplyr::mutate(product_cat_sub_by_year_month, date = as.Date(paste(year, "/", month, "/", 01, sep = "")))
 ```
 
 2.  Visualize changes in number sold throughout time by category / subcategory  
@@ -290,7 +306,7 @@ ggplot2::theme_update(plot.title = element_text(hjust = 0.5))
 ggplot2::ggplot(filter(product_subcat_by_year, ProductCategory == "Bikes"), 
                 aes(x=year, y=number_sold, fill=Subcategory)) +
                 ggplot2::geom_bar(stat="identity", position=position_dodge()) +
-                ggplot2::ggtitle("Number Items Sold per Year by Subcategory") +
+                ggplot2::ggtitle("Number of Bike Items Sold per Year by Subcategory") +
                 ggplot2::xlab("Year") +
                 ggplot2::ylab("Number Sold") +
                 facet_grid(.~ProductCategory)
@@ -301,10 +317,11 @@ knitr::kable(spread(select(filter(product_subcat_by_year, ProductCategory == "Bi
 ```
 \newpage
 ```{r echo = FALSE}
+ggplot2::theme_update(plot.title = element_text(hjust = 0.5))
 ggplot2::ggplot(filter(product_subcat_by_year, ProductCategory == "Components"), 
                 aes(x=year, y=number_sold, fill=Subcategory)) +
                 ggplot2::geom_bar(stat="identity", position=position_dodge()) +
-                ggplot2::ggtitle("Number Items Sold per Year by Subcategory") +
+                ggplot2::ggtitle("Number of Component Items Sold per Year by Subcategory") +
                 ggplot2::xlab("Year") +
                 ggplot2::ylab("Number Sold") +
                 facet_grid(.~ProductCategory)
@@ -315,10 +332,11 @@ knitr::kable(spread(select(filter(product_subcat_by_year, ProductCategory == "Co
 ```
 \newpage
 ```{r echo = FALSE}
+ggplot2::theme_update(plot.title = element_text(hjust = 0.5))
 ggplot2::ggplot(filter(product_subcat_by_year, ProductCategory == "Accessories"), 
                 aes(x=year, y=number_sold, fill=Subcategory)) +
                 ggplot2::geom_bar(stat="identity", position=position_dodge()) +
-                ggplot2::ggtitle("Number Items Sold per Year by Subcategory") +
+                ggplot2::ggtitle("Number of Accessory Items Sold per Year by Subcategory") +
                 ggplot2::xlab("Year") +
                 ggplot2::ylab("Number Sold") +
                 facet_grid(.~ProductCategory)
@@ -329,10 +347,11 @@ knitr::kable(spread(select(filter(product_subcat_by_year, ProductCategory == "Ac
 ```
 \newpage
 ```{r echo = FALSE}
+ggplot2::theme_update(plot.title = element_text(hjust = 0.5))
 ggplot2::ggplot(filter(product_subcat_by_year, ProductCategory == "Clothing"), 
                 aes(x=year, y=number_sold, fill=Subcategory)) +
                 ggplot2::geom_bar(stat="identity", position=position_dodge()) +
-                ggplot2::ggtitle("Number Items Sold per Year by Subcategory") +
+                ggplot2::ggtitle("Number of Clothing Items Sold per Year by Subcategory") +
                 ggplot2::xlab("Year") +
                 ggplot2::ylab("Number Sold") +
                 facet_grid(.~ProductCategory)
@@ -341,3 +360,76 @@ ggplot2::ggplot(filter(product_subcat_by_year, ProductCategory == "Clothing"),
 knitr::kable(spread(select(filter(product_subcat_by_year, ProductCategory == "Clothing"), 
                            Subcategory, year, number_sold), key = year, value = number_sold))
 ```
+\newpage
+# Time Series Analysis
+
+1.  For basic analysis, visualize the change in number of items sold over time by Category
+    a.  No Category sells significantly more quantities than the others  
+```{r echo = FALSE}
+ggplot2::theme_update(plot.title = element_text(hjust = 0.5))
+ggplot2::ggplot(product_cat_by_year_month, aes(x = date, y = number_sold, color=ProductCategory)) + geom_line() +
+                ggplot2::ggtitle("Number of Items Sold by Category") +
+                ggplot2::xlab("Date") +
+                ggplot2::ylab("Total Revenue")
+```
+\newpage
+2.  To pick a subset to test our regression models, visualize total revenue by Category
+    a.  The bikes category accounts for significantly more revenue than all other Categories combined
+    b.  Since this is such a large chunk of the business, the models will start with Bikes  
+```{r echo = FALSE}
+ggplot2::ggplot(product_cat_by_year_month, aes(x = date, y = total_revenue, color=ProductCategory)) + geom_line() +
+                ggplot2::ggtitle("Revenue of Items Sold by Category") +
+                ggplot2::xlab("Date") +
+                ggplot2::ylab("Total Revenue")
+
+```
+\newpage
+3.  Visualize the differences in the types of Bikes sold over time
+    a.  From mid-2013 on, all subcategories of Bikes are similar in the quantity sold  
+```{r echo = FALSE}
+ggplot2::theme_update(plot.title = element_text(hjust = 0.5))
+ggplot2::ggplot(filter(product_cat_sub_by_year_month, ProductCategory == "Bikes"), 
+                aes(x=date, y=number_sold, color=Subcategory)) +
+                ggplot2::geom_line() +
+                ggplot2::ggtitle("Number of Bike Items Sold by Subcategory") +
+                ggplot2::xlab("Date") +
+                ggplot2::ylab("Number Sold")
+```
+\newpage
+4.  To pick a subset of Bikes to perform regression analysis on, visualize the revenue by Bike type
+    a.  All subcategories are similar in the amount of revenue
+    b.  Road bikes have the most complete data and will be the initial test group  
+```{r echo = FALSE}
+ggplot2::ggplot(filter(product_cat_sub_by_year_month, ProductCategory == "Bikes"), 
+                aes(x=date, y=total_revenue, color=Subcategory)) +
+                ggplot2::geom_line() +
+                ggplot2::ggtitle("Revenue of Bike Items Sold by Subcategory") +
+                ggplot2::xlab("Date") +
+                ggplot2::ylab("Total Revenue")
+```
+\newpage
+
+# Regression Modeling / Forecasting
+```{r echo = FALSE, include = FALSE}
+lm_model_df <- dplyr::group_by(final_merged_df, year, month, ProductID, Subcategory) %>% 
+  dplyr::summarize(number_sold = sum(OrderQty)) %>% ungroup()
+lm_model_df <- dplyr::mutate(lm_model_df, date = as.Date(paste(year, "/", month, "/", 01, sep = "")))
+
+lm_model_df <- filter(lm_model_df, Subcategory == "Road Bikes")
+lm_model_df <- select(lm_model_df, month, year, date, ProductID, number_sold)
+
+lm_model_df <- dplyr::mutate(lm_model_df, months_from_start = (interval(ymd(as.Date("2011-05-01")), ymd(date))) %/% months(1))
+lm_model_df <- dplyr::mutate(lm_model_df, julian_date = yday(date))
+lm_model_df <- dplyr::mutate(lm_model_df, numeric_date = as.numeric(date))
+```  
+   Using ProductID, year, and month, months_from_start, julian_date, and numeric_date in a linear regression model, we can see that no date columns have no statistically significant outcome on the number of items sold. For this reason, I would suggest using a multivariate time series model, such as ARIMA or exponential smoothing. Dummy binary variables could be created for each of the product ID's to further expand the feature selection of the model. Running these forecasts every month would update the model with the best currently available information. Taking these forecasts, the SafetyStockLevel and ReorderPoint for each item can be updated dynamically based on upcoming needs.
+```{r echo = FALSE}
+lm_model <- lm(number_sold ~ ProductID + date + months_from_start + julian_date + numeric_date, data=lm_model_df)
+summary(lm_model)
+```
+\newpage
+# Limitations
+This analysis does not take into account some basic assumptions about the business and their reordering process. Bulk discounts, for example, may actually save the company money when ordering larger quantities and keeping that excess inventory in the warehouse. It also does not account for the needed optimization between number of orders, inventory cost savings, and delivery costs to factor the best frequency in which to order. To be a truly effective model, it would need to account for order frequency, as well as freight delivery times, to accurately predict how much is needed in inventory for the next 'x' months. For example, if the company gets a 20% discount for bulk orders, and the freight for those orders is terribly expensive, it may be more cost effective to ignore the forecasts and stock up on extra inventory less often. Another major assumption made is that items being sold will continue being sold for a decent amount of time. Items that are planned to only be in stock for a short duration will not benefit from forecasting models because of the lack of historical data. 
+
+# Conclusion
+The time series analysis makes it evident the company could benefit from the cost-reductions that a dynamically forecast inventory program could provide. From limiting expansion opportunities to decreasing marketing budgets, excess inventory can make or break a business if not kept in check, small- to medium-businesses especially. From the beginning analysis, a large number of columns had little to no statistically significant effect on the variable(s) in question, and ultimately, to predict for the future. Another thing that was overestimated was the sheer volume of different products, some of which were no longer being sold and some of which had just recently began being sold, which is why analysis was broken down to the most profitable subcategory of the most profitable category. 
